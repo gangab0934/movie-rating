@@ -2,10 +2,28 @@ import 'package:flutter/material.dart';
 import '../models/movie.dart';
 import '../widgets/star_rating.dart';
 
-class DetailScreen extends StatelessWidget {
+class DetailScreen extends StatefulWidget {
   final Movie movie;
 
   const DetailScreen({super.key, required this.movie});
+
+  @override
+  State<DetailScreen> createState() => _DetailScreenState();
+}
+
+class _DetailScreenState extends State<DetailScreen> {
+  late double _currentRating;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentRating = widget.movie.rating;
+  }
+
+  String getRatingPercentage(double rating) {
+    double percentage = (rating / 5) * 100;
+    return "${percentage.toStringAsFixed(0)}%"; // Rounded to 0 decimal
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +32,8 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          movie.title,
-          overflow: TextOverflow.ellipsis, // Handle long titles
+          widget.movie.title,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
       body: SingleChildScrollView(
@@ -28,12 +46,12 @@ class DetailScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.network(
-                  movie.posterUrl,
-                  height: isWideScreen ? 400 : 300, // Adjust height based on screen width
+                  widget.movie.posterUrl,
+                  height: isWideScreen ? 400 : 300,
                   width: double.infinity,
-                  fit: BoxFit.cover, // Ensures the image covers the entire box without distortion
+                  fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => const SizedBox(
-                    height: 300, // Fallback height
+                    height: 300,
                     child: Center(
                       child: Icon(Icons.broken_image, size: 60),
                     ),
@@ -45,26 +63,49 @@ class DetailScreen extends StatelessWidget {
 
             // Movie Title
             Text(
-              movie.title,
+              widget.movie.title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
 
-            // Rating with StarRating Widget
+            // Interactive Rating and Rating Percentage
             Row(
               children: [
                 const Text(
                   "Rating: ",
                   style: TextStyle(fontSize: 16),
                 ),
-                StarRating(rating: movie.rating, iconSize: 20),
+                StarRating(
+                  rating: _currentRating,
+                  iconSize: 24,
+                  onRatingChanged: (newRating) {
+                    setState(() {
+                      _currentRating = newRating;
+                      widget.movie.rating = newRating;
+                    });
+                  },
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  "${_currentRating.toStringAsFixed(1)} / 5", // show stars like 4.5/5
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  getRatingPercentage(_currentRating), // Show 90% etc.
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 20),
 
-            // Movie Overview Header
+            // Overview Header
             Text(
               "Overview",
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -75,7 +116,7 @@ class DetailScreen extends StatelessWidget {
 
             // Movie Overview Text
             Text(
-              movie.overview,
+              widget.movie.overview,
               style: const TextStyle(fontSize: 15, height: 1.5),
             ),
           ],

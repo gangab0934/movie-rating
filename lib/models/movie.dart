@@ -2,7 +2,7 @@ class Movie {
   final String title;
   final String overview;
   final String posterUrl;
-  final double rating;
+  double rating;  // <-- remove "final"
   bool isFavorite;
 
   Movie({
@@ -13,3 +13,4 @@ class Movie {
     this.isFavorite = false,
   });
 }
+
